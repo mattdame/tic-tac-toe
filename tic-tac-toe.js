@@ -64,7 +64,6 @@ function drawMark (index: number, playerNum: number) {
     }
     mark.x = getX(index)
     mark.y = getY(index)
-    mark.setScale(1.1, ScaleAnchor.Middle)
     markSprites[index] = mark
 }
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
