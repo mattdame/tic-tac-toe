@@ -40,6 +40,10 @@ function updateCursor () {
 }
 // --- PLACE MARK (BUTTON A) ---
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (configOpen) {
+        closeConfig()
+        return
+    }
     if (turn == -1) {
         return
     }
@@ -51,6 +55,11 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             turn = (turn == 1) ? 2 : 1
             updateTurnIndicator()
         }
+    }
+})
+controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (configOpen) {
+        closeConfig()
     }
 })
 function drawMark (index: number, playerNum: number) {
@@ -126,7 +135,8 @@ function updateTurnIndicator () {
 function drawScore (icon: Image, iconX: number, starX: number, fullStar: Image, score: number) {
     bg = scene.backgroundImage()
     bg.drawImage(icon, iconX, 1)
-    for (let i = 0; i <= 4; i++) {
+    bg.fillRect(starX, 22, 16, 96, 13)
+    for (let i = 0; i < winTarget; i++) {
         if (score > i) {
             bg.drawImage(fullStar, starX, 22 + i * 20)
         } else {
@@ -134,10 +144,52 @@ function drawScore (icon: Image, iconX: number, starX: number, fullStar: Image, 
         }
     }
 }
+// --- CONFIG MENU (MENU BUTTON) ---
+controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (configOpen) {
+        closeConfig()
+    } else {
+        openConfig()
+    }
+})
+function openConfig () {
+    configOpen = true
+    drawConfig()
+}
+function closeConfig () {
+    configOpen = false
+    if (configPanel) {
+        configPanel.destroy()
+        configPanel = null
+    }
+    updateTurnIndicator()
+}
+function drawConfig () {
+    if (configPanel) {
+        configPanel.destroy()
+    }
+    let panel = image.create(130, 70)
+    panel.fill(1)
+    panel.fillRect(3, 3, 124, 64, 13)
+    panel.print("PLAY TO", 40, 6, 15)
+    panel.print("" + winTarget, 62, 18, 1)
+    panel.print("< >  SET", 28, 44, 15)
+    panel.print("A OK   B BACK", 20, 54, 15)
+    configPanel = sprites.create(panel, 0)
+    configPanel.z = 50
+    configPanel.x = 80
+    configPanel.y = 60
+}
 function toggleVisibility (s: Sprite) {
     s.setFlag(SpriteFlag.Invisible, !(s.flags & SpriteFlag.Invisible))
 }
 function moveCursor (dRow: number, dCol: number) {
+    if (configOpen) {
+        winTarget = Math.max(1, Math.min(5, winTarget + dRow + dCol))
+        drawConfig()
+        updateTurnIndicator()
+        return
+    }
     if (turn == -1) {
         return
     }
@@ -157,21 +209,24 @@ function getX (p: number) {
 }
 function declareWinner (playerNum: number) {
     turn = -1
+    if (playerNum == 1) {
+        Xscore += 1
+    } else if (playerNum == 2) {
+        Oscore += 1
+    }
     updateTurnIndicator()
     pause(500)
     if (playerNum == 1) {
-        Xscore += 1
         game.splash("Player 1 (X) Won!")
     } else if (playerNum == 2) {
-        Oscore += 1
         game.splash("Player 2 (O) Won!")
     } else {
         game.splash("CAT / DRAW!")
     }
-    if (Xscore >= 5) {
+    if (Xscore >= winTarget) {
         game.splash("Player 1 Wins the Match!")
         resetScores()
-    } else if (Oscore >= 5) {
+    } else if (Oscore >= winTarget) {
         game.splash("Player 2 Wins the Match!")
         resetScores()
     }
@@ -221,6 +276,9 @@ let currentCol = 0
 let currentRow = 0
 let Oscore = 0
 let Xscore = 0
+let winTarget = 5
+let configOpen = false
+let configPanel: Sprite = null
 let markSprites: Sprite[] = []
 let list: number[] = []
 let pos = 0
@@ -353,7 +411,7 @@ resetScores()
 resetBoard()
 // Blinking Cursor Loop
 game.onUpdateInterval(400, function () {
-    if (pos >= 0 && cursor && turn != -1) {
+    if (pos >= 0 && cursor && turn != -1 && !configOpen) {
         cursor.setFlag(SpriteFlag.Invisible, !(cursor.flags & SpriteFlag.Invisible))
     }
 })
