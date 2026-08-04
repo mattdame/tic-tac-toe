@@ -79,12 +79,17 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     moveCursor(0, -1)
 })
 function showWin (one: number, two: number, three: number) {
+    winning = true
+    if (cursor) {
+        cursor.setFlag(SpriteFlag.Invisible, true)
+    }
     for (let index = 0; index <= 5; index++) {
         toggleVisibility(markSprites[one])
         toggleVisibility(markSprites[two])
         toggleVisibility(markSprites[three])
         pause(300)
     }
+    winning = false
 }
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     moveCursor(0, 1)
@@ -278,6 +283,7 @@ let Oscore = 0
 let Xscore = 0
 let winTarget = 5
 let configOpen = false
+let winning = false
 let configPanel: Sprite = null
 let markSprites: Sprite[] = []
 let list: number[] = []
@@ -411,7 +417,7 @@ resetScores()
 resetBoard()
 // Blinking Cursor Loop
 game.onUpdateInterval(400, function () {
-    if (pos >= 0 && cursor && turn != -1 && !configOpen) {
+    if (pos >= 0 && cursor && turn != -1 && !configOpen && !winning) {
         cursor.setFlag(SpriteFlag.Invisible, !(cursor.flags & SpriteFlag.Invisible))
     }
 })
