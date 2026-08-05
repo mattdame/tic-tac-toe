@@ -42,7 +42,9 @@ function updateCursor () {
 // --- PLACE MARK (BUTTON A) ---
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (configOpen) {
-        closeConfig()
+        adjustConfig(1)
+        drawConfig()
+        updateTurnIndicator()
         return
     }
     if (matchOver) {
@@ -74,11 +76,11 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
 function drawMark (index: number, playerNum: number) {
     let mark: Sprite
     if (playerNum == 1) {
-        // Player 1: Blue X
-        mark = sprites.create(X_ICON, 0)
+        // Player 1: X
+        mark = sprites.create(xImage, 0)
     } else {
-        // Player 2: Red O
-        mark = sprites.create(O_ICON, 0)
+        // Player 2: O
+        mark = sprites.create(oImage, 0)
     }
     mark.x = getX(index)
     mark.y = getY(index)
@@ -130,15 +132,15 @@ function updateTurnIndicator () {
     // Clear the banner
     bg2.fillRect(0, 0, 160, 18, 13)
     // Corner score indicators: X (top-left), O (top-right), stars below
-    drawScore(X_ICON, 6, 9, STAR, Xscore)
-    drawScore(O_ICON, 134, 137, STAR, Oscore)
+    drawScore(xImage, 6, 9, STAR, Xscore)
+    drawScore(oImage, 134, 137, STAR, Oscore)
     // Highlight box for the active player
     bg2.fillRect(42, 1, 76, 16, 15)
     if (turn == 1) {
-        bg2.fillRect(44, 3, 72, 12, 8)
+        bg2.fillRect(44, 3, 72, 12, colorX)
         bg2.print("TURN: X", 61, 5, 1)
     } else if (turn == 2) {
-        bg2.fillRect(44, 3, 72, 12, 2)
+        bg2.fillRect(44, 3, 72, 12, colorO)
         bg2.print("TURN: O", 61, 5, 1)
     } else if (turn == -1) {
         bg2.fillRect(44, 3, 72, 12, 9)
@@ -182,26 +184,54 @@ function drawConfig () {
     if (configPanel) {
         configPanel.destroy()
     }
-    let panel = image.create(130, 70)
+    let panel = image.create(130, 90)
     panel.fill(1)
-    panel.fillRect(3, 3, 124, 64, 13)
-    panel.print("PLAY TO", 40, 6, 15)
-    panel.print("" + winTarget, 62, 18, 1)
-    panel.print("< >  SET", 28, 44, 15)
-    panel.print("A OK   B BACK", 20, 54, 15)
+    panel.fillRect(3, 3, 124, 84, 13)
+    panel.fillRect(6, 16 + configIndex * 18, 118, 16, 15)
+    panel.print("CONFIG", 45, 4, 15)
+    panel.print("PLAY TO: " + winTarget, 12, 20, (configIndex == 0) ? 13 : 1)
+    panel.print("X COLOR", 12, 38, (configIndex == 1) ? 13 : 1)
+    panel.print("O COLOR", 12, 56, (configIndex == 2) ? 13 : 1)
+    panel.fillRect(78, 36, 14, 12, colorX)
+    panel.fillRect(78, 54, 14, 12, colorO)
+    panel.print("A/<> SET  B BACK", 12, 76, 15)
     configPanel = sprites.create(panel, 0)
     configPanel.z = 50
     configPanel.x = 80
-    configPanel.y = 60
+    configPanel.y = 65
+}
+function adjustConfig (delta: number) {
+    if (configIndex == 0) {
+        winTarget = Math.max(1, Math.min(5, winTarget + delta))
+    } else if (configIndex == 1) {
+        colorIndexX = (colorIndexX + delta + COLORS.length) % COLORS.length
+        colorX = COLORS[colorIndexX]
+        updateMarkImages()
+    } else if (configIndex == 2) {
+        colorIndexO = (colorIndexO + delta + COLORS.length) % COLORS.length
+        colorO = COLORS[colorIndexO]
+        updateMarkImages()
+    }
+}
+function updateMarkImages () {
+    xImage = X_ICON.clone()
+    xImage.replace(8, colorX)
+    oImage = O_ICON.clone()
+    oImage.replace(2, colorO)
 }
 function toggleVisibility (s: Sprite) {
     s.setFlag(SpriteFlag.Invisible, !(s.flags & SpriteFlag.Invisible))
 }
 function moveCursor (dRow: number, dCol: number) {
     if (configOpen) {
-        winTarget = Math.max(1, Math.min(5, winTarget + dRow + dCol))
-        drawConfig()
-        updateTurnIndicator()
+        if (dRow != 0) {
+            configIndex = (configIndex + dRow + 3) % 3
+            drawConfig()
+        } else {
+            adjustConfig(dCol)
+            drawConfig()
+            updateTurnIndicator()
+        }
         return
     }
     if (turn == -1) {
@@ -302,7 +332,15 @@ let winTarget = 5
 let configOpen = false
 let winning = false
 let matchOver = false
+let configIndex = 0
 let configPanel: Sprite = null
+let COLORS: number[] = []
+let colorIndexX = 7
+let colorIndexO = 1
+let colorX = 8
+let colorO = 2
+let xImage: Image = null
+let oImage: Image = null
 let markSprites: Sprite[] = []
 let list: number[] = []
 let pos = 0
@@ -436,6 +474,8 @@ ys = [
 ]
 pos = 4
 turn = 1
+COLORS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+updateMarkImages()
 // Start Game
 resetScores()
 resetBoard()
