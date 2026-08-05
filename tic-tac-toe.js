@@ -130,8 +130,8 @@ function updateTurnIndicator () {
     // Clear the banner
     bg2.fillRect(0, 0, 160, 18, 13)
     // Corner score indicators: X (top-left), O (top-right), stars below
-    drawScore(X_ICON, 6, 8, STAR, Xscore)
-    drawScore(O_ICON, 134, 136, STAR, Oscore)
+    drawScore(X_ICON, 6, 9, STAR, Xscore)
+    drawScore(O_ICON, 134, 137, STAR, Oscore)
     // Highlight box for the active player
     bg2.fillRect(42, 1, 76, 16, 15)
     if (turn == 1) {
@@ -149,12 +149,12 @@ function updateTurnIndicator () {
 function drawScore (icon: Image, iconX: number, starX: number, fullStar: Image, score: number) {
     bg = scene.backgroundImage()
     bg.drawImage(icon, iconX, 1)
-    bg.fillRect(starX, 22, 16, 96, 13)
+    bg.fillRect(starX, 24, 16, 96, 13)
     for (let i = 0; i < winTarget; i++) {
         if (score > i) {
-            bg.drawImage(fullStar, starX, 22 + i * 20)
+            bg.drawImage(fullStar, starX, 24 + i * 20)
         } else {
-            bg.drawImage(STAR_EMPTY, starX, 22 + i * 20)
+            bg.drawImage(STAR_EMPTY, starX, 24 + i * 20)
         }
     }
 }
