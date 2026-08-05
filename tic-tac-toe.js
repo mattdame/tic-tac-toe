@@ -202,7 +202,7 @@ function drawConfig () {
 }
 function adjustConfig (delta: number) {
     if (configIndex == 0) {
-        winTarget = Math.max(1, Math.min(5, winTarget + delta))
+        winTarget = (winTarget + delta + 4) % 5 + 1
     } else if (configIndex == 1) {
         colorIndexX = (colorIndexX + delta + COLORS.length) % COLORS.length
         colorX = COLORS[colorIndexX]
