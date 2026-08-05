@@ -149,12 +149,12 @@ function updateTurnIndicator () {
 function drawScore (icon: Image, iconX: number, starX: number, fullStar: Image, score: number) {
     bg = scene.backgroundImage()
     bg.drawImage(icon, iconX, 1)
-    bg.fillRect(starX, 24, 16, 96, 13)
+    bg.fillRect(starX, 28, 16, 96, 13)
     for (let i = 0; i < winTarget; i++) {
         if (score > i) {
-            bg.drawImage(fullStar, starX, 24 + i * 20)
+            bg.drawImage(fullStar, starX, 28 + i * 18)
         } else {
-            bg.drawImage(STAR_EMPTY, starX, 24 + i * 20)
+            bg.drawImage(STAR_EMPTY, starX, 28 + i * 18)
         }
     }
 }
