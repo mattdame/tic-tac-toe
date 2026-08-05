@@ -44,6 +44,10 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         closeConfig()
         return
     }
+    if (matchOver) {
+        startNewMatch()
+        return
+    }
     if (turn == -1) {
         return
     }
@@ -60,6 +64,10 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     if (configOpen) {
         closeConfig()
+        return
+    }
+    if (matchOver) {
+        startNewMatch()
     }
 })
 function drawMark (index: number, playerNum: number) {
@@ -230,11 +238,19 @@ function declareWinner (playerNum: number) {
     }
     if (Xscore >= winTarget) {
         game.splash("Player 1 Wins the Match!")
-        resetScores()
+        matchOver = true
+        updateTurnIndicator()
     } else if (Oscore >= winTarget) {
         game.splash("Player 2 Wins the Match!")
-        resetScores()
+        matchOver = true
+        updateTurnIndicator()
+    } else {
+        resetBoard()
     }
+}
+function startNewMatch () {
+    matchOver = false
+    resetScores()
     resetBoard()
 }
 // --- BOARD SETUP ---
@@ -284,6 +300,7 @@ let Xscore = 0
 let winTarget = 5
 let configOpen = false
 let winning = false
+let matchOver = false
 let configPanel: Sprite = null
 let markSprites: Sprite[] = []
 let list: number[] = []
