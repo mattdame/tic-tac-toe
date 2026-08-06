@@ -51,19 +51,39 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         startNewMatch()
         return
     }
+    if (awaitingContinue) {
+        resetBoard()
+        return
+    }
     if (turn == -1) {
         return
     }
-    if (list[pos] == 0) {
-        list[pos] = turn
-        drawMark(pos, turn)
+    placePiece(pos)
+})
+function placePiece (p: number) {
+    if (list[p] == 0) {
+        let q = queues[turn]
+        if (q.length >= pieceLimit() && pieceLimit() < 5) {
+            let oldest = q.shift()
+            list[oldest] = 0
+            if (markSprites[oldest]) {
+                markSprites[oldest].destroy()
+                markSprites[oldest] = null
+            }
+        }
+        list[p] = turn
+        drawMark(p, turn)
+        q.push(p)
+        placements += 1
+        refreshFades(turn)
         checkWinning(turn)
         if (turn != -1) {
             turn = (turn == 1) ? 2 : 1
             updateTurnIndicator()
         }
     }
-})
+    autoTimer = 0
+}
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     if (configOpen) {
         closeConfig()
@@ -71,6 +91,10 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     }
     if (matchOver) {
         startNewMatch()
+        return
+    }
+    if (awaitingContinue) {
+        resetBoard()
     }
 })
 function drawMark (index: number, playerNum: number) {
@@ -90,17 +114,15 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     moveCursor(0, -1)
 })
 function showWin (one: number, two: number, three: number) {
-    winning = true
     if (cursor) {
         cursor.setFlag(SpriteFlag.Invisible, true)
     }
-    for (let index = 0; index <= 5; index++) {
-        toggleVisibility(markSprites[one])
-        toggleVisibility(markSprites[two])
-        toggleVisibility(markSprites[three])
-        pause(300)
+    flashCells = [one, two, three]
+}
+function showDraw () {
+    if (cursor) {
+        cursor.setFlag(SpriteFlag.Invisible, true)
     }
-    winning = false
 }
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     moveCursor(0, 1)
@@ -120,12 +142,26 @@ function checkWinning (playerNum: number) {
             return
         }
     }
+    if (placements >= moveCap()) {
+        showDraw()
+        declareWinner(0)
+        return
+    }
     for (let val of list) {
         if (val == 0) {
             return
         }
     }
-    declareWinner(0)
+    if (pieceLimit() == 5) {
+        showDraw()
+        declareWinner(0)
+    }
+}
+function moveCap () {
+    if (pieceLimit() == 4) {
+        return 26
+    }
+    return 40
 }
 function updateTurnIndicator () {
     bg2 = scene.backgroundImage()
@@ -180,13 +216,22 @@ function closeConfig () {
     }
     updateTurnIndicator()
 }
+function modeLabel () {
+    return MODES[modeIndex]
+}
+function pieceLimit () {
+    return parseInt(modeLabel().charAt(0))
+}
+function modeIsEasy () {
+    return modeLabel().indexOf("E") >= 0
+}
 function drawConfig () {
     if (configPanel) {
         configPanel.destroy()
     }
-    let panel = image.create(130, 90)
+    let panel = image.create(130, 110)
     panel.fill(1)
-    panel.fillRect(3, 3, 124, 84, 13)
+    panel.fillRect(3, 3, 124, 104, 13)
     panel.fillRect(6, 16 + configIndex * 18, 118, 16, 15)
     panel.print("CONFIG", 45, 4, 15)
     panel.print("PLAY TO: " + winTarget, 12, 20, (configIndex == 0) ? 13 : 1)
@@ -194,11 +239,12 @@ function drawConfig () {
     panel.print("O COLOR", 12, 56, (configIndex == 2) ? 13 : 1)
     panel.fillRect(78, 36, 14, 12, colorX)
     panel.fillRect(78, 54, 14, 12, colorO)
-    panel.print("A/<> SET  B BACK", 12, 76, 15)
+    panel.print("MODE: " + modeLabel(), 12, 74, (configIndex == 3) ? 13 : 1)
+    panel.print("A/<> SET  B BACK", 12, 96, 15)
     configPanel = sprites.create(panel, 0)
     configPanel.z = 50
     configPanel.x = 80
-    configPanel.y = 65
+    configPanel.y = 60
 }
 function adjustConfig (delta: number) {
     if (configIndex == 0) {
@@ -211,6 +257,15 @@ function adjustConfig (delta: number) {
         colorIndexO = (colorIndexO + delta + COLORS.length) % COLORS.length
         colorO = COLORS[colorIndexO]
         updateMarkImages()
+    } else if (configIndex == 3) {
+        let oldMode = modeIndex
+        modeIndex = (modeIndex + delta + MODES.length) % MODES.length
+        if (modeIndex != oldMode) {
+            updateFadeImages()
+            if (!matchOver) {
+                resetBoard()
+            }
+        }
     }
 }
 function updateMarkImages () {
@@ -218,6 +273,48 @@ function updateMarkImages () {
     xImage.replace(8, colorX)
     oImage = O_ICON.clone()
     oImage.replace(2, colorO)
+    updateFadeImages()
+}
+function updateFadeImages () {
+    xFades = []
+    oFades = []
+    let n = pieceLimit()
+    for (let life = 1; life < n; life++) {
+        xFades[life] = makeFaded(xImage, life, n)
+        oFades[life] = makeFaded(oImage, life, n)
+    }
+}
+function makeFaded (base: Image, life: number, n: number) {
+    let keep = 100 - Math.floor(75 * (n - life) / (n - 1))
+    let out = base.clone()
+    for (let x = 0; x < out.width; x++) {
+        for (let y = 0; y < out.height; y++) {
+            if (out.getPixel(x, y) != 0 && (x * 31 + y * 17) % 100 >= keep) {
+                out.setPixel(x, y, 0)
+            }
+        }
+    }
+    return out
+}
+function refreshFades (playerNum: number) {
+    if (!modeIsEasy()) {
+        return
+    }
+    let q = queues[playerNum]
+    let full = (playerNum == 1) ? xImage : oImage
+    let fades = (playerNum == 1) ? xFades : oFades
+    let n = pieceLimit()
+    for (let i = 0; i < q.length; i++) {
+        let life = n - q.length + i + 1
+        let img = full
+        if (life < n && fades[life]) {
+            img = fades[life]
+        }
+        let s = markSprites[q[i]]
+        if (s) {
+            s.setImage(img)
+        }
+    }
 }
 function toggleVisibility (s: Sprite) {
     s.setFlag(SpriteFlag.Invisible, !(s.flags & SpriteFlag.Invisible))
@@ -225,7 +322,7 @@ function toggleVisibility (s: Sprite) {
 function moveCursor (dRow: number, dCol: number) {
     if (configOpen) {
         if (dRow != 0) {
-            configIndex = (configIndex + dRow + 3) % 3
+            configIndex = (configIndex + dRow + 4) % 4
             drawConfig()
         } else {
             adjustConfig(dCol)
@@ -259,10 +356,13 @@ function declareWinner (playerNum: number) {
         Oscore += 1
     }
     updateTurnIndicator()
-    pause(500)
-    if (playerNum == 1) {
+    endPlayer = playerNum
+    endDelay = END_DELAY
+}
+function showResultSplash () {
+    if (endPlayer == 1) {
         game.splash("Player 1 (X) Won!")
-    } else if (playerNum == 2) {
+    } else if (endPlayer == 2) {
         game.splash("Player 2 (O) Won!")
     } else {
         game.splash("CAT / DRAW!")
@@ -276,7 +376,7 @@ function declareWinner (playerNum: number) {
         matchOver = true
         updateTurnIndicator()
     } else {
-        resetBoard()
+        awaitingContinue = true
     }
 }
 function startNewMatch () {
@@ -318,6 +418,13 @@ function resetBoard () {
         }
     }
     markSprites = []
+    queues = [[], [], []]
+    placements = 0
+    autoTimer = 0
+    flashCells = []
+    awaitingContinue = false
+    endDelay = 0
+    endPlayer = 0
     updateCursor()
     updateTurnIndicator()
 }
@@ -330,10 +437,11 @@ let Oscore = 0
 let Xscore = 0
 let winTarget = 5
 let configOpen = false
-let winning = false
 let matchOver = false
 let configIndex = 0
+let modeIndex = 0
 let configPanel: Sprite = null
+let MODES: string[] = ["5", "4E", "4H", "3E", "3H"]
 let COLORS: number[] = []
 let colorIndexX = 7
 let colorIndexO = 1
@@ -342,6 +450,17 @@ let colorO = 2
 let xImage: Image = null
 let oImage: Image = null
 let markSprites: Sprite[] = []
+let queues: number[][] = []
+let xFades: Image[] = []
+let oFades: Image[] = []
+let placements = 0
+let autoTimer = 0
+let AUTO_DELAY = 8
+let flashCells: number[] = []
+let awaitingContinue = false
+let endDelay = 0
+let endPlayer = 0
+let END_DELAY = 15
 let list: number[] = []
 let pos = 0
 let ys: number[] = []
@@ -481,7 +600,61 @@ resetScores()
 resetBoard()
 // Blinking Cursor Loop
 game.onUpdateInterval(400, function () {
-    if (pos >= 0 && cursor && turn != -1 && !configOpen && !winning) {
+    if (pos >= 0 && cursor && turn != -1 && !configOpen) {
         cursor.setFlag(SpriteFlag.Invisible, !(cursor.flags & SpriteFlag.Invisible))
+    }
+})
+// Flash the result (winning line or draw board) until the player resets
+game.onUpdateInterval(300, function () {
+    if (flashCells.length == 0) {
+        return
+    }
+    if (turn == -1) {
+        for (let c of flashCells) {
+            if (markSprites[c]) {
+                toggleVisibility(markSprites[c])
+            }
+        }
+    } else {
+        for (let c of flashCells) {
+            if (markSprites[c]) {
+                markSprites[c].setFlag(SpriteFlag.Invisible, false)
+            }
+        }
+        flashCells = []
+    }
+})
+// Auto-place the sole remaining move
+game.onUpdateInterval(100, function () {
+    if (endDelay > 0) {
+        endDelay -= 1
+        if (endDelay <= 0) {
+            showResultSplash()
+        }
+        return
+    }
+    if (turn == -1 || configOpen || matchOver) {
+        autoTimer = 0
+        return
+    }
+    let emptyCells: number[] = []
+    for (let i = 0; i < 9; i++) {
+        if (list[i] == 0) {
+            emptyCells.push(i)
+        }
+    }
+    if (emptyCells.length != 1) {
+        autoTimer = 0
+        return
+    }
+    if (autoTimer == 0) {
+        autoTimer = AUTO_DELAY
+    } else {
+        autoTimer -= 1
+    }
+    if (autoTimer <= 0) {
+        pos = emptyCells[0]
+        updateCursor()
+        placePiece(emptyCells[0])
     }
 })
