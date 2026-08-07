@@ -229,11 +229,11 @@ function drawConfig () {
     if (configPanel) {
         configPanel.destroy()
     }
-    let panel = image.create(130, 110)
+    let panel = image.create(150, 110)
     panel.fill(1)
-    panel.fillRect(3, 3, 124, 104, 13)
-    panel.fillRect(6, 16 + configIndex * 18, 118, 16, 15)
-    panel.print("CONFIG", 45, 4, 15)
+    panel.fillRect(3, 3, 144, 104, 13)
+    panel.fillRect(6, 16 + configIndex * 18, 138, 16, 15)
+    panel.print("CONFIG", 57, 4, 15)
     panel.print("PLAY TO: " + winTarget, 12, 20, (configIndex == 0) ? 13 : 1)
     panel.print("X COLOR", 12, 38, (configIndex == 1) ? 13 : 1)
     panel.print("O COLOR", 12, 56, (configIndex == 2) ? 13 : 1)
