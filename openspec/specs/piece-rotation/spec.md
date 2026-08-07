@@ -7,14 +7,14 @@ Lets players cap the number of pieces they control and rotates the oldest piece 
 ## Requirements
 
 ### Requirement: MODE configuration selector
-The system SHALL provide a `MODE` config option that cycles through the values `5`, `4E`, `4H`, `3E`, `3H`, in that order, defaulting to `5`. The value `5` SHALL behave exactly like standard tic-tac-toe. The letter in `4E`/`3E`/`4H`/`3H` SHALL mark easy (`E`, indicator shown) or hard (`H`, no indicator) difficulty, and the number SHALL be the piece limit.
+The system SHALL provide a `MODE` config option that cycles through the values `CLASSIC`, `4 PIECES FADE`, `4 PIECES SOLID`, `3 PIECES FADE`, `3 PIECES SOLID`, in that order, defaulting to `CLASSIC`. The value `CLASSIC` SHALL behave exactly like standard tic-tac-toe. In the remaining values, the number SHALL be the per-player piece limit and the word SHALL mark the age indicator: `FADE` means the indicator is shown, `SOLID` means no indicator.
 
 #### Scenario: Selecting a mode
-- **WHEN** the player opens the config menu and adjusts `MODE` from the default `5`
-- **THEN** the value cycles in order (`5 → 4E → 4H → 3E → 3H` and wraps around) and the selected value is shown on the config panel
+- **WHEN** the player opens the config menu and adjusts `MODE` from the default `CLASSIC`
+- **THEN** the value cycles in order (`CLASSIC → 4 PIECES FADE → 4 PIECES SOLID → 3 PIECES FADE → 3 PIECES SOLID` and wraps around) and the selected value is shown on the config panel
 
-#### Scenario: Mode 5 is standard play
-- **WHEN** `MODE` is `5` and players play a game
+#### Scenario: Classic is standard play
+- **WHEN** `MODE` is `CLASSIC` and players play a game
 - **THEN** the game plays exactly as standard tic-tac-toe: no piece ever disappears and a full board ends the game in a draw
 
 #### Scenario: Changing mode mid-match
@@ -22,7 +22,7 @@ The system SHALL provide a `MODE` config option that cycles through the values `
 - **THEN** the current board resets, the match scores and `PLAY TO` target are preserved, and the new mode takes effect
 
 ### Requirement: Per-player piece limit and rotation
-Each player SHALL control at most `N` pieces on the board, where `N` is the number in the selected `MODE` (`5`→5, `4E`/`4H`→4, `3E`/`3H`→3). When a player attempts to place a piece while already at the limit, the oldest of that player's pieces on the board SHALL be removed (its cell cleared and its sprite destroyed) and the new piece SHALL be placed at the cursor location, which may be any empty cell.
+Each player SHALL control at most `N` pieces on the board, where `N` is the number in the selected `MODE` (`CLASSIC`→5, `4 PIECES FADE`/`4 PIECES SOLID`→4, `3 PIECES FADE`/`3 PIECES SOLID`→3). When a player attempts to place a piece while already at the limit, the oldest of that player's pieces on the board SHALL be removed (its cell cleared and its sprite destroyed) and the new piece SHALL be placed at the cursor location, which may be any empty cell.
 
 #### Scenario: Placing beyond the limit removes the oldest piece
 - **WHEN** a player with `N` pieces already on the board places a new piece on an empty cell
@@ -37,18 +37,18 @@ Each player SHALL control at most `N` pieces on the board, where `N` is the numb
 - **THEN** the new piece may be placed on any empty cell, including one not adjacent to their other pieces
 
 #### Scenario: No rotation at the default limit
-- **WHEN** `MODE` is `5`
+- **WHEN** `MODE` is `CLASSIC`
 - **THEN** no piece is ever removed, because a game ends (win or draw) before any player reaches a 6th placement
 
 ### Requirement: Draw detection depends on piece limit
-The system SHALL declare a draw on a full board only when `MODE` is `5`. At `4E`/`4H`/`3E`/`3H` a board can never fill to 9 cells, so the game SHALL not declare a draw from a full-board condition and SHALL instead rely on the placement cap to end unwinnable games.
+The system SHALL declare a draw on a full board only when `MODE` is `CLASSIC`. In the 3- and 4-piece modes a board can never fill to 9 cells, so the game SHALL not declare a draw from a full-board condition and SHALL instead rely on the placement cap to end unwinnable games.
 
-#### Scenario: Full-board draw in mode 5
-- **WHEN** `MODE` is `5` and the 9th cell is filled with no win
+#### Scenario: Full-board draw in classic
+- **WHEN** `MODE` is `CLASSIC` and the 9th cell is filled with no win
 - **THEN** the game declares a draw
 
 #### Scenario: No draw from a full board in lower modes
-- **WHEN** `MODE` is `3E` and both players have 3 pieces each on the board with no win
+- **WHEN** `MODE` is `3 PIECES FADE` and both players have 3 pieces each on the board with no win
 - **THEN** the game does not end from the full-board rule and play continues
 
 ### Requirement: Placement cap ends unwinnable games
@@ -69,8 +69,8 @@ In modes with fewer than 5 pieces, a board that reaches a per-mode placement cap
 ### Requirement: Auto-place the sole remaining move
 When a board has exactly one empty cell and the game is active (a player's turn, the config menu closed, no win animation running, and the match not over), the system SHALL automatically place the current player's piece in that cell after a delay of roughly 0.8 seconds. If an auto-placement leaves exactly one empty cell again, the same rule SHALL apply to the next player, so forced endgames play out without input. A manual placement on the sole empty cell before the delay elapses SHALL succeed and restart the delay for the following move rather than causing a second placement.
 
-#### Scenario: Auto-place of 5's final move
-- **WHEN** `MODE` is `5`, 8 cells are filled, and the game is active
+#### Scenario: Auto-place of classic's final move
+- **WHEN** `MODE` is `CLASSIC`, 8 cells are filled, and the game is active
 - **THEN** after roughly 0.8 seconds the current player's piece is placed in the remaining cell and the game ends (win or board-full draw)
 
 #### Scenario: 4-piece forced endgame cascades
