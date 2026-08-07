@@ -179,9 +179,21 @@ function updateTurnIndicator () {
         bg2.fillRect(44, 3, 72, 12, colorO)
         bg2.print("TURN: O", 61, 5, 1)
     } else if (turn == -1) {
-        bg2.fillRect(44, 3, 72, 12, 9)
-        bg2.print("GAME OVER", 57, 5, 1)
+        let text = "DRAW"
+        let fill = DRAW_COLOR
+        if (endPlayer == 1) {
+            text = matchOver ? "X WINS MATCH" : "X WINS"
+            fill = colorX
+        } else if (endPlayer == 2) {
+            text = matchOver ? "O WINS MATCH" : "O WINS"
+            fill = colorO
+        }
+        bg2.fillRect(44, 3, 72, 12, fill)
+        bg2.print(text, 80 - Math.floor(text.length * 5 / 2), 5, textColorFor(fill))
     }
+}
+function textColorFor (fill: number) {
+    return IS_LIGHT[fill] ? 15 : 1
 }
 // --- TURN INDICATOR & HUD ---
 function drawScore (icon: Image, iconX: number, starX: number, fullStar: Image, score: number) {
@@ -360,13 +372,6 @@ function declareWinner (playerNum: number) {
     endDelay = END_DELAY
 }
 function showResultSplash () {
-    if (endPlayer == 1) {
-        game.splash("Player 1 (X) Won!")
-    } else if (endPlayer == 2) {
-        game.splash("Player 2 (O) Won!")
-    } else {
-        game.splash("CAT / DRAW!")
-    }
     if (Xscore >= winTarget) {
         game.splash("Player 1 Wins the Match!")
         matchOver = true
@@ -447,6 +452,8 @@ let colorIndexX = 7
 let colorIndexO = 1
 let colorX = 8
 let colorO = 2
+let DRAW_COLOR = 11
+let IS_LIGHT = [false, true, false, true, true, true, false, false, false, true, true, true, false, true, false, false]
 let xImage: Image = null
 let oImage: Image = null
 let markSprites: Sprite[] = []
