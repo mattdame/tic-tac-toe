@@ -219,23 +219,23 @@ function closeConfig () {
     updateTurnIndicator()
 }
 function modeLabel () {
-    return MODES[modeIndex]
+    return MODE_LABELS[modeIndex]
 }
 function pieceLimit () {
-    return parseInt(modeLabel().charAt(0))
+    return MODE_PIECES[modeIndex]
 }
-function modeIsEasy () {
-    return modeLabel().indexOf("E") >= 0
+function modeFades () {
+    return MODE_FADES[modeIndex]
 }
 function drawConfig () {
     if (configPanel) {
         configPanel.destroy()
     }
-    let panel = image.create(130, 110)
+    let panel = image.create(150, 110)
     panel.fill(1)
-    panel.fillRect(3, 3, 124, 104, 13)
-    panel.fillRect(6, 16 + configIndex * 18, 118, 16, 15)
-    panel.print("CONFIG", 45, 4, 15)
+    panel.fillRect(3, 3, 144, 104, 13)
+    panel.fillRect(6, 16 + configIndex * 18, 138, 16, 15)
+    panel.print("CONFIG", 57, 4, 15)
     panel.print("PLAY TO: " + winTarget, 12, 20, (configIndex == 0) ? 13 : 1)
     panel.print("X COLOR", 12, 38, (configIndex == 1) ? 13 : 1)
     panel.print("O COLOR", 12, 56, (configIndex == 2) ? 13 : 1)
@@ -261,7 +261,7 @@ function adjustConfig (delta: number) {
         updateMarkImages()
     } else if (configIndex == 3) {
         let oldMode = modeIndex
-        modeIndex = (modeIndex + delta + MODES.length) % MODES.length
+        modeIndex = (modeIndex + delta + MODE_LABELS.length) % MODE_LABELS.length
         if (modeIndex != oldMode) {
             updateFadeImages()
             if (!matchOver) {
@@ -299,7 +299,7 @@ function makeFaded (base: Image, life: number, n: number) {
     return out
 }
 function refreshFades (playerNum: number) {
-    if (!modeIsEasy()) {
+    if (!modeFades()) {
         return
     }
     let q = queues[playerNum]
@@ -447,7 +447,9 @@ let pickStarterOpen = false
 let configIndex = 0
 let modeIndex = 0
 let configPanel: Sprite = null
-let MODES: string[] = ["5", "4E", "4H", "3E", "3H"]
+let MODE_LABELS: string[] = ["CLASSIC", "4 PIECES FADE", "4 PIECES SOLID", "3 PIECES FADE", "3 PIECES SOLID"]
+let MODE_PIECES: number[] = [5, 4, 4, 3, 3]
+let MODE_FADES: boolean[] = [false, true, false, true, false]
 let COLORS: number[] = []
 let colorIndexX = 7
 let colorIndexO = 1
