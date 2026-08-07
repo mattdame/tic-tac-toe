@@ -52,6 +52,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         return
     }
     if (awaitingContinue) {
+        roundStarter = 3 - roundStarter
         resetBoard()
         return
     }
@@ -62,6 +63,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 function placePiece (p: number) {
     if (list[p] == 0) {
+        pickStarterOpen = false
         let q = queues[turn]
         if (q.length >= pieceLimit() && pieceLimit() < 5) {
             let oldest = q.shift()
@@ -89,12 +91,9 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         closeConfig()
         return
     }
-    if (matchOver) {
-        startNewMatch()
-        return
-    }
-    if (awaitingContinue) {
-        resetBoard()
+    if (pickStarterOpen) {
+        roundStarter = 3 - roundStarter
+        updateTurnIndicator()
     }
 })
 function drawMark (index: number, playerNum: number) {
@@ -174,10 +173,10 @@ function updateTurnIndicator () {
     bg2.fillRect(42, 1, 76, 16, 15)
     if (turn == 1) {
         bg2.fillRect(44, 3, 72, 12, colorX)
-        bg2.print("TURN: X", 61, 5, 1)
+        bg2.print(pickStarterOpen ? "X STARTS" : "TURN: X", 61, 5, 1)
     } else if (turn == 2) {
         bg2.fillRect(44, 3, 72, 12, colorO)
-        bg2.print("TURN: O", 61, 5, 1)
+        bg2.print(pickStarterOpen ? "O STARTS" : "TURN: O", 61, 5, 1)
     } else if (turn == -1) {
         bg2.fillRect(44, 3, 72, 12, 9)
         bg2.print("GAME OVER", 57, 5, 1)
@@ -382,6 +381,8 @@ function showResultSplash () {
 function startNewMatch () {
     matchOver = false
     resetScores()
+    roundStarter = Math.randomRange(1, 2)
+    pickStarterOpen = true
     resetBoard()
 }
 // --- BOARD SETUP ---
@@ -399,7 +400,7 @@ function resetBoard () {
     board.drawLine(40, 73, 120, 73, 15)
     board.drawLine(40, 74, 120, 74, 15)
     scene.setBackgroundImage(board)
-    turn = 1
+    turn = roundStarter
     pos = 4
     list = [
         0,
@@ -438,6 +439,8 @@ let Xscore = 0
 let winTarget = 5
 let configOpen = false
 let matchOver = false
+let roundStarter = 1
+let pickStarterOpen = false
 let configIndex = 0
 let modeIndex = 0
 let configPanel: Sprite = null
@@ -596,8 +599,7 @@ turn = 1
 COLORS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 updateMarkImages()
 // Start Game
-resetScores()
-resetBoard()
+startNewMatch()
 // Blinking Cursor Loop
 game.onUpdateInterval(400, function () {
     if (pos >= 0 && cursor && turn != -1 && !configOpen) {
