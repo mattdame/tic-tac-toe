@@ -217,13 +217,13 @@ function closeConfig () {
     updateTurnIndicator()
 }
 function modeLabel () {
-    return MODES[modeIndex]
+    return MODE_LABELS[modeIndex]
 }
 function pieceLimit () {
-    return parseInt(modeLabel().charAt(0))
+    return MODE_PIECES[modeIndex]
 }
-function modeIsEasy () {
-    return modeLabel().indexOf("E") >= 0
+function modeFades () {
+    return MODE_FADES[modeIndex]
 }
 function drawConfig () {
     if (configPanel) {
@@ -259,7 +259,7 @@ function adjustConfig (delta: number) {
         updateMarkImages()
     } else if (configIndex == 3) {
         let oldMode = modeIndex
-        modeIndex = (modeIndex + delta + MODES.length) % MODES.length
+        modeIndex = (modeIndex + delta + MODE_LABELS.length) % MODE_LABELS.length
         if (modeIndex != oldMode) {
             updateFadeImages()
             if (!matchOver) {
@@ -297,7 +297,7 @@ function makeFaded (base: Image, life: number, n: number) {
     return out
 }
 function refreshFades (playerNum: number) {
-    if (!modeIsEasy()) {
+    if (!modeFades()) {
         return
     }
     let q = queues[playerNum]
@@ -441,7 +441,9 @@ let matchOver = false
 let configIndex = 0
 let modeIndex = 0
 let configPanel: Sprite = null
-let MODES: string[] = ["5", "4E", "4H", "3E", "3H"]
+let MODE_LABELS: string[] = ["CLASSIC", "4 PIECES FADE", "4 PIECES SOLID", "3 PIECES FADE", "3 PIECES SOLID"]
+let MODE_PIECES: number[] = [5, 4, 4, 3, 3]
+let MODE_FADES: boolean[] = [false, true, false, true, false]
 let COLORS: number[] = []
 let colorIndexX = 7
 let colorIndexO = 1
