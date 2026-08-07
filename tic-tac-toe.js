@@ -93,6 +93,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     }
     if (pickStarterOpen) {
         roundStarter = 3 - roundStarter
+        turn = roundStarter
         updateTurnIndicator()
     }
 })
@@ -172,11 +173,13 @@ function updateTurnIndicator () {
     // Highlight box for the active player
     bg2.fillRect(42, 1, 76, 16, 15)
     if (turn == 1) {
+        let label = pickStarterOpen ? "X STARTS" : "TURN: X"
         bg2.fillRect(44, 3, 72, 12, colorX)
-        bg2.print(pickStarterOpen ? "X STARTS" : "TURN: X", 61, 5, 1)
+        bg2.print(label, 80 - label.length * 3, 5, 1)
     } else if (turn == 2) {
+        let label = pickStarterOpen ? "O STARTS" : "TURN: O"
         bg2.fillRect(44, 3, 72, 12, colorO)
-        bg2.print(pickStarterOpen ? "O STARTS" : "TURN: O", 61, 5, 1)
+        bg2.print(label, 80 - label.length * 3, 5, 1)
     } else if (turn == -1) {
         bg2.fillRect(44, 3, 72, 12, 9)
         bg2.print("GAME OVER", 57, 5, 1)
