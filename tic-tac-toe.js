@@ -171,14 +171,14 @@ function updateTurnIndicator () {
     drawScore(xImage, 6, 9, STAR, Xscore)
     drawScore(oImage, 134, 137, STAR, Oscore)
     // Highlight box for the active player
-    bg2.fillRect(42, 1, 76, 16, 15)
+    bg2.fillRect(38, 1, 84, 16, 15)
     if (turn == 1) {
         let label = pickStarterOpen ? "X STARTS" : "TURN: X"
-        bg2.fillRect(44, 3, 72, 12, colorX)
+        bg2.fillRect(40, 3, 80, 12, colorX)
         bg2.print(label, 80 - label.length * 3, 5, 1)
     } else if (turn == 2) {
         let label = pickStarterOpen ? "O STARTS" : "TURN: O"
-        bg2.fillRect(44, 3, 72, 12, colorO)
+        bg2.fillRect(40, 3, 80, 12, colorO)
         bg2.print(label, 80 - label.length * 3, 5, 1)
     } else if (turn == -1) {
         let text = "DRAW"
@@ -190,8 +190,8 @@ function updateTurnIndicator () {
             text = matchOver ? "O WINS MATCH" : "O WINS"
             fill = colorO
         }
-        bg2.fillRect(44, 3, 72, 12, fill)
-        bg2.print(text, 80 - Math.floor(text.length * 5 / 2), 5, textColorFor(fill))
+        bg2.fillRect(40, 3, 80, 12, fill)
+        bg2.print(text, 80 - text.length * 3, 5, textColorFor(fill))
     }
 }
 function textColorFor (fill: number) {
@@ -369,8 +369,8 @@ function declareWinner (playerNum: number) {
     } else if (playerNum == 2) {
         Oscore += 1
     }
-    updateTurnIndicator()
     endPlayer = playerNum
+    updateTurnIndicator()
     endDelay = END_DELAY
 }
 function showResultSplash () {
@@ -461,7 +461,7 @@ let colorIndexO = 1
 let colorX = 8
 let colorO = 2
 let DRAW_COLOR = 11
-let IS_LIGHT = [false, true, false, true, true, true, false, false, false, true, true, true, false, true, false, false]
+let IS_LIGHT = [false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, false]
 let xImage: Image = null
 let oImage: Image = null
 let markSprites: Sprite[] = []
