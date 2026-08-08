@@ -175,11 +175,11 @@ function updateTurnIndicator () {
     if (turn == 1) {
         let label = pickStarterOpen ? "X STARTS" : "TURN: X"
         bg2.fillRect(40, 3, 80, 12, colorX)
-        bg2.print(label, 80 - label.length * 3, 5, 1)
+        bg2.print(label, 80 - label.length * 3, 5, textColorFor(colorX))
     } else if (turn == 2) {
         let label = pickStarterOpen ? "O STARTS" : "TURN: O"
         bg2.fillRect(40, 3, 80, 12, colorO)
-        bg2.print(label, 80 - label.length * 3, 5, 1)
+        bg2.print(label, 80 - label.length * 3, 5, textColorFor(colorO))
     } else if (turn == -1) {
         let text = "DRAW"
         let fill = DRAW_COLOR

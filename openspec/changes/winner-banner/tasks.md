@@ -16,7 +16,7 @@
 
 ## 4. Verification
 
-- [ ] 4.1 On-device check: X wins a round → banner shows `X WINS` in X's color; O wins → `O WINS` in O's color; draw → `DRAW` in color 11.
-- [ ] 4.2 On-device check: match end shows `X WINS MATCH` / `O WINS MATCH` and the match splash still appears.
-- [ ] 4.3 On-device check: setting X or O to a light color (e.g. white or yellow) keeps banner text legible; default blue/red still show white text.
-- [ ] 4.4 On-device check: no result splash appears after a round; pressing A still advances to the next round, and the match-over A still starts a new match.
+- [x] 4.1 On-device check: X wins a round → banner shows `X WINS` in X's color; O wins → `O WINS` in O's color; draw → `DRAW` in color 11.
+- [x] 4.2 On-device check: match end shows `X WINS MATCH` / `O WINS MATCH` and the match splash still appears.
+- [x] 4.3 On-device check: setting X or O to a light color (e.g. white or yellow) keeps banner text legible; default blue/red still show white text.
+- [x] 4.4 On-device check: no result splash appears after a round; pressing A still advances to the next round, and the match-over A still starts a new match.
